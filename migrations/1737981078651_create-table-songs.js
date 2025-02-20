@@ -1,20 +1,7 @@
-/**
- * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
- */
 exports.shorthands = undefined;
 
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
 exports.up = (pgm) => {
 
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
     pgm.createTable('song', {
         id: {
             type: 'VARCHAR(50)',
@@ -53,7 +40,15 @@ exports.up = (pgm) => {
             notNull: true,
         },
     });
+
+    pgm.addConstraint(
+        'song',
+        'fk_song.albumId',
+        'FOREIGN KEY ("albumId") REFERENCES albums(id) ON DELETE CASCADE',
+    )
 };
+
 exports.down = (pgm) => {
+    pgm.dropConstraint('song', 'fk_song.albumId')
     pgm.dropTable('song');
 };

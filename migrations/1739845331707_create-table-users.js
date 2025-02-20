@@ -1,23 +1,21 @@
-exports.up = (pgm) => {
+exports.shorthands = undefined;
 
-    pgm.createTable('albums', {
+exports.up = (pgm) => {
+    pgm.createTable('users', {
         id: {
             type: 'VARCHAR(50)',
             primaryKey: true,
         },
-        name: {
+        username: {
+            type: 'VARCHAR(50)',
+            unique: true,
+            notNull: true,
+        },
+        password: {
             type: 'TEXT',
             notNull: true,
         },
-        year: {
-            type: 'INTEGER',
-            notNull: true,
-        },
-        created_at: {
-            type: 'TEXT',
-            notNull: true,
-        },
-        updated_at: {
+        fullname: {
             type: 'TEXT',
             notNull: true,
         },
@@ -25,5 +23,5 @@ exports.up = (pgm) => {
 };
 
 exports.down = (pgm) => {
-    pgm.dropTable('albums');
+    pgm.dropTable('users');
 };
