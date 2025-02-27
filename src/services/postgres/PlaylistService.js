@@ -41,6 +41,15 @@ class PlaylistService {
     }
 
     async getPlaylists(owner) {
+        try {
+            const result = await this._cacheService.get(`playlist:${owner}`);
+            const _playlists = JSON.parse(result);
+
+            return {
+              cache: true,
+              _playlists
+            }
+        } catch (error) {
         const query = {
             text: `
                 SELECT playlist.id, playlist.name, users.username FROM playlist LEFT JOIN users ON users.id = playlist.owner LEFT JOIN collaborations ON collaborations.playlist_id = playlist.id WHERE playlist.owner = $1 OR collaborations.user_id = $1`,
@@ -49,7 +58,11 @@ class PlaylistService {
 
         const result = await this._pool.query(query);
         await this._cacheService.set(`playlist:${owner}`, JSON.stringify(result.rows));
-        return result.rows;
+        return {
+            cache: false,
+            _playlists: result.rows
+        }
+      }
     }
 
     async getPlaylistById(playlistId) {
