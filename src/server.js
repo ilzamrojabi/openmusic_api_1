@@ -1,6 +1,7 @@
 require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const Inert = require('@hapi/inert');
 const ClientError = require('./exceptions/ClientError');
 
 const albums = require('./api/albums');
@@ -28,7 +29,14 @@ const playlist = require('./api/playlist')
 const PlaylistService = require('./services/postgres/PlaylistService');
 const PlaylistValidator = require('./validator/playlist');
 
+const _exports = require('./api/exports');
+const ProducerService = require('./services/rabbitmq/ProducerService');
+const ExportsValidator = require('./validator/exports');
+
+const CacheService = require('./services/redis/CacheService');
+
 const init = async () => {
+  const cacheService = new CacheService();
   const collaborationsService = new CollaborationsService();
   const albumsService = new AlbumsService();
   const songsService = new SongsService();
@@ -48,6 +56,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -112,7 +123,14 @@ const init = async () => {
           service: playlistService,
           validator: PlaylistValidator,
       },
-  }
+  },
+  {
+    plugin: _exports,
+    options: {
+      service: ProducerService,
+      validator: ExportsValidator,
+    },
+  },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
@@ -125,7 +143,7 @@ const init = async () => {
       newResponse.code(response.statusCode);
       return newResponse;
     }
-    console.log(response);
+    // console.log(response);
     return h.continue;
   });
 

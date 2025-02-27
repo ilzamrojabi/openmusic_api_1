@@ -58,7 +58,7 @@ class PlaylistsHandler {
         this._validator.validatePlaylistSongPayload(request.payload);
 
         const { id: credentialId } = request.auth.credentials;
-        const { id: playlistId } = request.params;
+        const { playlistId } = request.params;
         const { songId } = request.payload;
 
         await this._service.verifyPlaylistAccess(playlistId, credentialId);
@@ -74,7 +74,7 @@ class PlaylistsHandler {
     }
 
     async getSongsFromPlaylistByIdHandler(request) {
-        const { id: playlistId } = request.params;
+        const { playlistId } = request.params;
         const { id: credentialId } = request.auth.credentials;
 
         await this._service.verifyPlaylistAccess(playlistId, credentialId);
@@ -95,7 +95,7 @@ class PlaylistsHandler {
     }
 
     async deleteSongFromPlaylistByIdHandler(request) {
-        const { id: playlistId } = request.params;
+        const { playlistId } = request.params;
         const { id: credentialId } = request.auth.credentials;
         const { songId } = request.payload;
 

@@ -44,7 +44,7 @@ exports.up = (pgm) => {
     pgm.addConstraint(
         'song',
         'fk_song.albumId',
-        'FOREIGN KEY ("albumId") REFERENCES albums(id) ON DELETE CASCADE',
+        'FOREIGN KEY ("album_id") REFERENCES albums(id) ON DELETE CASCADE',
     )
 };
 
