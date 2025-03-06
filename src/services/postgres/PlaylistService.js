@@ -12,17 +12,6 @@ class PlaylistService {
     }
 
     async addPlaylist({ name, owner }) {
-        const checkQuery = {
-            text: 'SELECT id FROM playlist WHERE name = $1 AND owner = $2',
-            values: [name, owner],
-        };
-
-        const checkResult = await this._pool.query(checkQuery);
-
-        if (checkResult.rowCount > 0) {
-            throw new InvariantError('Playlist dengan nama ini sudah ada');
-        }
-
         const id = nanoid(16);
 
         const query = {
@@ -33,23 +22,13 @@ class PlaylistService {
         const result = await this._pool.query(query);
 
         if (!result.rows[0].id) {
-            throw new InvariantError('Gagal menghapus playlist karena ID tidak ditemukan');
+            throw new InvariantError('Playlist gagal ditambahkan');
 
         }
-        await this._cacheService.delete(`playlist:${credentialId}`);
         return result.rows[0].id;
     }
 
     async getPlaylists(owner) {
-        try {
-            const result = await this._cacheService.get(`playlist:${owner}`);
-            const _playlists = JSON.parse(result);
-
-            return {
-              cache: true,
-              _playlists
-            }
-        } catch (error) {
         const query = {
             text: `
                 SELECT playlist.id, playlist.name, users.username FROM playlist LEFT JOIN users ON users.id = playlist.owner LEFT JOIN collaborations ON collaborations.playlist_id = playlist.id WHERE playlist.owner = $1 OR collaborations.user_id = $1`,
@@ -57,12 +36,7 @@ class PlaylistService {
         };
 
         const result = await this._pool.query(query);
-        await this._cacheService.set(`playlist:${owner}`, JSON.stringify(result.rows));
-        return {
-            cache: false,
-            _playlists: result.rows
-        }
-      }
+        return result.rows;
     }
 
     async getPlaylistById(playlistId) {
