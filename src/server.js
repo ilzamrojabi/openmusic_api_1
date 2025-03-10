@@ -33,6 +33,14 @@ const _exports = require('./api/exports');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const ExportsValidator = require('./validator/exports');
 
+const Uploads = require('./api/uploads');
+const StorageService = require('./services/storage/StorageService');
+const UploadsValidator = require('./validator/uploads');
+
+const UserAlbumLikes = require('./api/user_album_likes');
+const UserAlbumLikesService = require('./services/postgres/UserAlbumLikesService');
+const UserAlbumLikesValidator = require('./validator/useralbumlikes');
+
 const CacheService = require('./services/redis/CacheService');
 
 const init = async () => {
@@ -129,6 +137,22 @@ const init = async () => {
     options: {
       service: ProducerService,
       validator: ExportsValidator,
+    },
+  },
+  {
+    plugin: Uploads,
+    options: {
+      StorageService,
+      AlbumsService,
+      validator: UploadsValidator,
+    },
+  },
+  {
+    plugin: UserAlbumLikes,
+    options:{
+      UserAlbumLikesService,
+      AlbumsService,
+      validator: UserAlbumLikesValidator,
     },
   },
   ]);

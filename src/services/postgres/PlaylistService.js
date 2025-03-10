@@ -69,7 +69,7 @@ class PlaylistService {
             throw new InvariantError('Gagal menghapus playlist karena ID tidak ditemukan');
 
         }
-        await this._cacheService.delete(`playlist:${owner}`);
+        //await this._cacheService.delete(`playlist:${owner}`);
         return result.rows[0].id;
     }
 

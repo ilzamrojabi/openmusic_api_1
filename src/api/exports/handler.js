@@ -16,7 +16,7 @@ class ExportsHandler {
       targetEmail: request.payload.targetEmail,
     };
 
-    await this._service.sendMessage('export:notes', JSON.stringify(message));
+    await this._service.sendMessage('export:playlist', JSON.stringify(message));
 
     const response = h.response({
       status: 'success',
@@ -26,5 +26,4 @@ class ExportsHandler {
     return response;
   }
 }
-
 module.exports = ExportsHandler;
