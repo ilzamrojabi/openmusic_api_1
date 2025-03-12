@@ -2,6 +2,7 @@ require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const Inert = require('@hapi/inert');
+const path = require('path');
 const ClientError = require('./exceptions/ClientError');
 
 const albums = require('./api/albums');
@@ -51,6 +52,7 @@ const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const playlistService = new PlaylistService(collaborationsService, cacheService);
+  const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/images'));
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -91,6 +93,7 @@ const init = async () => {
       plugin: albums,
       options: {
         service: albumsService,
+        storageService,
         validator: AlbumsValidator
       },
     },
@@ -126,23 +129,24 @@ const init = async () => {
       },
   },
   {
-      plugin: playlist,
+    plugin: playlist,
       options: {
-          service: playlistService,
-          validator: PlaylistValidator,
+        service: playlistService,
+        validator: PlaylistValidator,
       },
   },
   {
     plugin: _exports,
     options: {
       service: ProducerService,
+      playlistService,
       validator: ExportsValidator,
     },
   },
   {
     plugin: Uploads,
     options: {
-      StorageService,
+      storageService,
       AlbumsService,
       validator: UploadsValidator,
     },
@@ -157,19 +161,48 @@ const init = async () => {
   },
   ]);
 
+  // server.ext('onPreResponse', (request, h) => {
+  //   const { response } = request;
+  //   if (response instanceof ClientError) {
+  //     const newResponse = h.response({
+  //       status: 'fail',
+  //       message: response.message,
+  //     });
+  //     newResponse.code(response.statusCode);
+  //     return newResponse;
+  //   }
+  //   // console.log(response);
+  //   return h.continue;
+  // });
+
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
-    if (response instanceof ClientError) {
-      const newResponse = h.response({
-        status: 'fail',
-        message: response.message,
-      });
-      newResponse.code(response.statusCode);
-      return newResponse;
+
+    if (response instanceof Error) {
+        if (response instanceof ClientError) {
+            const newResponse = h.response({
+                status: 'fail',
+                message: response.message,
+            });
+            newResponse.code(response.statusCode);
+            return newResponse;
+        }
+
+        if (!response.isServer) {
+            return h.continue;
+        }
+
+        const newResponse = h.response({
+            status: 'error',
+            message: 'terjadi kegagalan pada server kami',
+        });
+        console.log(`Error: ${response}`);
+        newResponse.code(500);
+        return newResponse;
     }
-    // console.log(response);
+
     return h.continue;
-  });
+});
 
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);

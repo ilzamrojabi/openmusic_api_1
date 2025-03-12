@@ -53,7 +53,7 @@ async deleteUserAlbumLikeByIdHandler(request, h) {
   // const { id: credentialId } = request.auth.credentials;
   const { id: albumId } = request.params;
   const { id: userId } = request.auth.credentials;
-  await this._userAlbumLikesService.deleteUserAlbumLikeByIdHandler(userId, albumId)
+  //await this._userAlbumLikesService.deleteUserAlbumLikeByIdHandler(userId, albumId)
 
   return {
     status: 'success',

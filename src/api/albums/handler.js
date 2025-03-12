@@ -1,8 +1,8 @@
 const ClientError = require('../../exceptions/ClientError');
 
 class AlbumsHandler {
-  constructor(service, validator, storageService) {
-    this._service = service;
+  constructor(albumService, validator, storageService) {
+    this._albumService = albumService;
     this._validator = validator;
     this._storageService = storageService;
     this.postAlbumHandler = this.postAlbumHandler.bind(this);
@@ -76,7 +76,7 @@ class AlbumsHandler {
 
     this._validator.validateImageHeaders(cover.hapi.headers);
     const filename = await this._storageService.writeFile(cover, cover.hapi);
-    await this._service.updateCoverById(id, fileLocation);
+    await this._albumService.updateCoverById(id, filename);
 
     const response = h.response({
       status: 'success',
@@ -88,11 +88,11 @@ class AlbumsHandler {
 
   async postAlbumByIdLikesHandler(request, h) {
     const { id: album_id } = request.params;
-    await this._service.getAlbumById(album_id);
+    await this._albumService.getAlbumById(album_id);
 
     const user_id = request.auth.credentials.id;
 
-    await this._service.addLikes(user_id, album_id);
+    await this._albumService.addLikes(user_id, album_id);
 
     const response = h.response({
       status: 'success',
@@ -107,7 +107,7 @@ class AlbumsHandler {
     await this._service.getAlbumById(album_id);
 
     const user_id = request.auth.credentials.id;
-    await this._service.deleteLikes(user_id, album_id);
+    await this._albumService.deleteLikes(user_id, album_id);
 
     const response = h.response({
       status: 'success',

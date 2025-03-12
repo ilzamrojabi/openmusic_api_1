@@ -1,18 +1,27 @@
-const amqp = require('amqplib');
+const fs = require('fs');
 
-const ProducerService = {
-  sendMessage: async (queue, message) => {
-    const connection = await amqp.connect(process.env.RABBITMQ_SERVER);
-    const channel = await connection.createChannel();
-    await channel.assertQueue(queue, {
-        durable: true,
+class StorageService {
+  constructor(folder) {
+    this._folder = folder;
+
+    if (!fs.existsSync(folder)) {
+      fs.mkdirSync(folder, { recursive: true });
+    }
+  }
+
+  writeFile(file, meta) {
+    const filename = +new Date() + meta.filename;
+    const path = `${this._folder}/${filename}`;
+
+    const fileStream = fs.createWriteStream(path);
+
+    return new Promise((resolve, reject) => {
+      fileStream.on('error', (error) => reject(error));
+      file.pipe(fileStream);
+      file.on('end', () => resolve(filename));
     });
+  }
+}
 
-    await channel.sendToQueue(queue, Buffer.from(message));
-    setTimeout(() => {
-        connection.close();
-    }, 1000);
-  },
-};
-
-module.exports = ProducerService;
+module.exports = StorageService;
+//ProducerService

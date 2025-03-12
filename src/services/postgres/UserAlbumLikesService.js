@@ -64,8 +64,6 @@ class UserAlbumLikesService {
         username: result.rows[0].username,
         albums: albums
     }
-
-
     return user;
   }
 

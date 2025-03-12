@@ -16,7 +16,7 @@ class UploadsHandler {
 
     const filename = await this._storageService.writeFile(cover, cover.hapi);
     const url = `http://${process.env.HOST}:${process.env.PORT}/uploads/images/${filename}`;
-    await this._albumsService.editAlbumCoverById(albumId, url);
+    await this._albumsService.updateCoverById(albumId, url);
 
     const response = h.response({
       status: 'success',
