@@ -19,6 +19,7 @@ class UserAlbumLikesService {
     };
 
     const result = await this._pool.query(query);
+    await this._cacheService.delete(`album_like:${albumId}`)
 
     if (!result.rows[0].id) {
       throw new InvariantError('Album gagal ditambahkan');
@@ -36,7 +37,7 @@ class UserAlbumLikesService {
       values: [albumId],
     };
 
-    const result = await this._pool.query(queryPlaylist);
+    const result = await this._pool.query(queryUser);
 
     if (!result.rows.length) {
       throw new NotFoundError("Album tidak ditemukan");
@@ -75,6 +76,7 @@ class UserAlbumLikesService {
     };
 
     const result = await this._pool.query(query);
+    await this._cacheService.delete(`album_like:${albumId}`)
 
     if (!result.rowCount) {
       throw new InvariantError('Batal menyukai album ');

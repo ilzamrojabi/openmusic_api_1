@@ -1,8 +1,8 @@
 const ClientError = require('../../exceptions/ClientError');
 
 class UserAlbumLikesHandler {
-  constructor(UserAlbumLikesService, albumsService, cacheService, validator) {
-    this._userAlbumLikesService = UserAlbumLikesService;
+  constructor(userAlbumLikesService, albumsService, cacheService, validator) {
+    this._userAlbumLikesService = userAlbumLikesService;
     this._albumsService = albumsService;
     this._cacheService = cacheService
     this._validator = validator;
@@ -19,7 +19,7 @@ class UserAlbumLikesHandler {
 
     await this._userAlbumLikesService.verifyUserLikeAlbum(albumId, userId)
     await this._albumsService.getAlbumById(albumId)
-    await this._userAlbumLikesService.addUser_album_like({albumId, userId})
+    await this._userAlbumLikesService.addUserAlbumLike({albumId, userId})
 
     const response = h.response({
       status: 'success',
@@ -28,6 +28,7 @@ class UserAlbumLikesHandler {
     response.code(201);
     return response;
   }
+
   async getUserAlbumLikesHandler(request,h) {
     const { id:albumId } = request.params;
 
@@ -47,20 +48,16 @@ class UserAlbumLikesHandler {
    }
 
 
-async deleteUserAlbumLikeByIdHandler(request, h) {
+  async deleteUserAlbumLikeByIdHandler(request, h) {
+    const { id: albumId } = request.params;
+    const { id: userId } = request.auth.credentials;
+    await this._userAlbumLikesService.deleteUserAlbumLikeById(userId, albumId)
 
-  // const { id } = request.params;
-  // const { id: credentialId } = request.auth.credentials;
-  const { id: albumId } = request.params;
-  const { id: userId } = request.auth.credentials;
-  //await this._userAlbumLikesService.deleteUserAlbumLikeByIdHandler(userId, albumId)
-
-  return {
-    status: 'success',
-    message: 'Batal menyukai album',
-  };
+    return {
+      status: 'success',
+      message: 'Batal menyukai album',
+    };
+  }
 }
-}
-
 
 module.exports = UserAlbumLikesHandler;

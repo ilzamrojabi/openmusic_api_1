@@ -34,9 +34,7 @@ const _exports = require('./api/exports');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const ExportsValidator = require('./validator/exports');
 
-const Uploads = require('./api/uploads');
 const StorageService = require('./services/storage/StorageService');
-const UploadsValidator = require('./validator/uploads');
 
 const UserAlbumLikes = require('./api/user_album_likes');
 const UserAlbumLikesService = require('./services/postgres/UserAlbumLikesService');
@@ -52,7 +50,8 @@ const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const playlistService = new PlaylistService(collaborationsService, cacheService);
-  const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/images'));
+  const storageService = new StorageService(path.resolve(__dirname, 'api/albums/file/images'));
+  const userAlbumLikesService = new UserAlbumLikesService(cacheService);
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -127,53 +126,32 @@ const init = async () => {
           playlistService,
           validator: CollaborationsValidator,
       },
-  },
-  {
-    plugin: playlist,
+    },
+    {
+      plugin: playlist,
       options: {
         service: playlistService,
         validator: PlaylistValidator,
       },
-  },
-  {
-    plugin: _exports,
-    options: {
-      service: ProducerService,
-      playlistService,
-      validator: ExportsValidator,
     },
-  },
-  {
-    plugin: Uploads,
-    options: {
-      storageService,
-      AlbumsService,
-      validator: UploadsValidator,
+    {
+      plugin: _exports,
+      options: {
+        service: ProducerService,
+        playlistService,
+        validator: ExportsValidator,
+      },
     },
-  },
-  {
-    plugin: UserAlbumLikes,
-    options:{
-      UserAlbumLikesService,
-      AlbumsService,
-      validator: UserAlbumLikesValidator,
+    {
+      plugin: UserAlbumLikes,
+      options:{
+        userAlbumLikesService,
+        albumsService,
+        cacheService,
+        validator: UserAlbumLikesValidator,
+      },
     },
-  },
   ]);
-
-  // server.ext('onPreResponse', (request, h) => {
-  //   const { response } = request;
-  //   if (response instanceof ClientError) {
-  //     const newResponse = h.response({
-  //       status: 'fail',
-  //       message: response.message,
-  //     });
-  //     newResponse.code(response.statusCode);
-  //     return newResponse;
-  //   }
-  //   // console.log(response);
-  //   return h.continue;
-  // });
 
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
